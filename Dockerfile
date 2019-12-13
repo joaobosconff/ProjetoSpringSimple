@@ -1,9 +1,21 @@
 FROM maven:3.5-jdk-8 AS build  
-COPY src /usr/src/api/src  
-COPY pom.xml /usr/src/api  
-RUN mvn -f /usr/src/api/pom.xml package -DskipTests
+
+
+#Copia o conteudo do src para a pasta /api/src
+COPY src /api/src 
+#Copia o pom para a raiz
+COPY pom.xml /api
+
+#Roda o comando
+RUN mvn -f /api/pom.xml clean package -DskipTests
 
 FROM java:8
-COPY --from=build /usr/src/api/target/**.jar /usr/api/application.jar 
+
+#Copia da imagem anterior,da pasta target para /api/ da imagem java
+COPY --from=build /api/target/**.jar /api/application.jar 
+
+#Exporta a porta do projeto
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/usr/api/application.jar"]  
+
+#Determina o comando de executacao para a imagem nova
+ENTRYPOINT ["java","-jar","/api/application.jar"]  
